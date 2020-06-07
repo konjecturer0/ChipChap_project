@@ -1,0 +1,193 @@
+{
+    "version": 2,
+    "controller": {},
+    "workers": [
+        {
+            "type": "router",
+            "realms": [
+                {
+                    "name": "chat",
+                    "roles": [
+                        {
+                            "name": "public",
+                            "permissions": [
+                                {
+                                    "uri": "",
+                                    "match": "prefix",
+                                    "allow": {
+                                        "subscribe": true,
+                                        "publish": true,
+                                        "call": true,
+                                        "register": true
+                                    },
+                                    "disclose": {
+                                        "caller": false,
+                                        "publisher": false
+                                    },
+                                    "cache": true
+                                }
+                            ]
+                        },
+                        {
+                            "name": "user",
+                            "permissions": [
+                                {
+                                    "uri": "com.chipchap.session.user",
+                                    "match": "prefix",
+                                    "allow": {
+                                        "subscribe": true,
+                                        "publish": true,
+                                        "call": true,
+                                        "register": false
+                                    },
+                                    "disclose": {
+                                        "caller": true,
+                                        "publisher": true
+                                    },
+                                    "cache": true
+                                }
+                            ]
+                        },
+                        {
+                            "name": "sessioner",
+                            "permissions": [
+                                {
+                                    
+                                    "uri": "com.chipchap.session",
+                                    "match": "prefix",
+                                    "allow": {
+                                        "subscribe": true,
+                                        "publish": true,
+                                        "call": true,
+                                        "register": true
+                                    },
+                                    "disclose": {
+                                        "caller": true,
+                                        "publisher": true
+                                    },
+                                    "cache": true
+                                },
+                                {
+                                    "uri": "com.chipchap.users",
+                                    "match": "prefix",
+                                    "allow": {
+                                        "call": true,
+                                        "register": true,
+                                        "publish": false,
+                                        "subscribe": false
+                                    },
+                                    "disclose": {
+                                        "caller": false,
+                                        "publisher": false
+                                    },
+                                    "cache": true
+                                }
+                            ]
+                        },
+                        {
+                            "name": "user_authenticator",
+                            "permissions": [
+                                {
+                                    "uri": "wamp.session",
+                                    "match": "prefix",
+                                    "allow": {
+                                        "subscribe": true,
+                                        "publish": true,
+                                        "call": true,
+                                        "register": true
+                                    },
+                                    "disclose": {
+                                        "caller": true,
+                                        "publisher": true
+                                    },
+                                    "cache": true
+                                },
+                                {
+                                    "uri": "com.chipchap.users",
+                                    "match": "prefix",
+                                    "allow": {
+                                        "call": true,
+                                        "register": true,
+                                        "publish": false,
+                                        "subscribe": false
+                                    },
+                                    "disclose": {
+                                        "caller": false,
+                                        "publisher": false
+                                    },
+                                    "cache": true
+                                }
+                            ] 
+                        }
+                    ]
+                }
+            ],
+            "transports": [
+                {
+                    "type": "websocket",
+                    "endpoint": {
+                        "type": "tcp",
+                        "port": 8080
+                    },
+                    "auth": {
+                        "anonymous": {
+                            "type": "static",
+                            "role": "user"
+                        },
+                        "ticket": {
+                            "type": "static",
+                            "principals": {
+                                "user_authenticator" : {
+                                    "ticket": "doauthuser",
+                                    "role": "user_authenticator"
+                                },
+                                "sessioner": {
+                                    "ticket": "checksessions",
+                                    "role": "sessioner"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type":"container",
+            "options": {
+                "pythonpath": [
+                    "../backend"
+                ]
+            },
+            "components": [
+                {
+                    "type": "class",
+                    "classname": "authentication.UserAuth",
+                    "realm": "chat",
+                    "transport": {
+                        "type": "websocket",
+                        "endpoint": {
+                            "type": "tcp",
+                            "port": 8080,
+                            "host": "127.0.0.1"
+                        },
+                        "url": "ws://127.0.0.1:8080"
+                    }
+                },
+                {
+                    "type": "class",
+                    "classname": "sessioner.Sessioner",
+                    "realm": "chat",
+                    "transport": {
+                        "type": "websocket",
+                        "endpoint": {
+                            "type": "tcp",
+                            "host": "127.0.0.1",
+                            "port": 8080
+                        },
+                        "url": "ws://127.0.0.1:8080"
+                    }
+                }
+            ]
+        }
+    ]
+}
