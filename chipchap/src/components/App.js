@@ -40,7 +40,6 @@ class App extends React.Component {
             this.sess = session;
             session.call('com.chipchap.session.user.actions:contacts').then(
                 (result) => {
-                    // console.log(result[0]);
                     this.setState({users: [ ...this.state.users, ...result]});
                 },
                 (error) => {
@@ -51,16 +50,6 @@ class App extends React.Component {
             session.call('com.chipchap.session.user.actions:getmyID').then(
                 (result) => {
                     this.setState({userid: result});
-                    console.log(`GOT ID:${result}`);
-                    session.subscribe(`com.chipchap.session.user.actions:listen:${result}`, this.trackMessageNotify).then(
-                        (subscription) => {
-                            console.log("subscription to <<listen>> succeded");
-                        },
-                        (error) => {
-                            console.log("received error with subscription to <<listen>>")
-                            console.log(error);
-                        }
-                    );
                 },
                 (error) => {
                     console.log("GOT AN ERROR! WHILE CALLING: GETMYID");
@@ -69,62 +58,14 @@ class App extends React.Component {
             );
         }
         connection.onclose = function(session, details) {
+            console.log("Connection has been terminated.");
             console.log(session, details);
         }
         connection.open();
     }
 
     toggleChat = (user) => {
-        console.log(`TOGGLER >>>>${user.id}`);
         this.setState({userSelect: user.id});
-    }
-
-    onStoreClean = (id) => {
-        const removeUser = (id) => {
-            const messageStorage = this.state.messageStore;
-            console.log("BEFORE NEW MESSAGE STORE");
-            console.log(messageStorage);
-            let newMessageStorage = [];
-            for (let i=0; i < messageStorage.length; i++) {
-                if (!messageStorage[i][id]) {
-                    newMessageStorage.push(messageStorage[i]);
-                }
-            }
-            console.log("NEW MESSAGE STORE");
-            console.log(newMessageStorage);
-            console.log("END NEW MESSAGE STORE");
-            return newMessageStorage;
-        }
-        const msgStorage = removeUser(id);
-        this.setState({messageStore: msgStorage}, ()=> console.log(this.state.messageStore));
-    }
-
-    trackMessageNotify = ([message, userid]) => {
-        console.log("*****USERID");
-        console.log(`THIS>>>>${String(userid)}`);
-        console.log(this.state.userSelect);
-        if (this.state.userSelect !== userid) {
-            let userStore = [];
-            // for (let i=0; i<this.state.messageStore.length;i++) {
-            //     if (Object.keys(this.state.messageStore[i])[0] === userid) {
-            //         userStore = [...this.state.messageStore[i][userid], message[0]];
-            //     } 
-            // }
-            if (this.state.messageStore.length === 0) {
-                userStore = [...userStore, {[userid]:[message[0]]}];
-            } else {
-                for (let i=0; i<this.state.messageStore.length;i++) {
-                    if (Object.keys(this.state.messageStore[i])[0] !== userid) {
-                        userStore = [...userStore, this.state.messageStore[i]];
-                    } else if (Object.keys(this.state.messageStore[i])[0] === userid) {
-                        userStore = [...userStore, {[userid]:[...this.state.messageStore[i][userid], message[0]]}]
-                    } else {
-                        userStore = [...userStore, {[userid]:[message[0]]}];
-                    }
-                }
-            }
-            this.setState({messageStore: userStore});
-        }
     }
 
     selectUserChat = (users) => {
@@ -133,22 +74,6 @@ class App extends React.Component {
                 return users[i];
             }
         }
-    }
-
-    selectMessageStore() {
-        const user = this.selectUserChat(this.state.users);
-        console.log("*.*.*.* INSIDE SELECT MESSAGE STORAGE");
-        console.log(user);
-        const messageStorage = this.state.messageStore;
-        for (let i=0; i < messageStorage.length; i++) {
-            console.log(messageStorage);
-            if (Object.keys(messageStorage[i])[0] === user.id) {
-                console.log("??? INSIDE IF STATEMENT");
-                console.log(messageStorage[i]);
-                return messageStorage[i][user.id];
-            }
-        }
-        return [];
     }
 
     onSearch = (e) => {
@@ -177,7 +102,7 @@ class App extends React.Component {
                     {/*****  CHAT  *****/}
                     {
                         this.state.userSelect ? (
-                            <Chat onMessageStoreClean={this.onStoreClean} myid={this.state.userid} user={this.selectUserChat(this.state.users)} session={this.sess} messageNotify={this.selectMessageStore()} />
+                            <Chat myid={this.state.userid} user={this.selectUserChat(this.state.users)} session={this.sess} />
                         ) : (
                             <div className="w-full justify-center items-center flex py-64">
                                 <h3 style={{color: '#BFBEC5'}} className="cursor-default font-semibold text-4xl tracking-tight">Open a Chat</h3>

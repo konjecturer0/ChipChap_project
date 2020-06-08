@@ -14,9 +14,9 @@ class UserAuth(ApplicationSession):
 
     # authID prototype for testing
     userIDS = [
-            {'v114o': {"name": "Vladimir Chudyk", "contacts": ['i114o', 'q114o']}},
-            {'i114o': {"name": "Ivan Chudyk", "contacts": ['v114o', 'q114o']}},
-            {'q114o': {"name": "Quantum <3", "contacts": ['v114o', 'i114o']}}
+            {'v114o': {"name": "Vladimir", "contacts": ['i114o', 'q114o']}},
+            {'i114o': {"name": "Ivan", "contacts": ['v114o', 'q114o']}},
+            {'q114o': {"name": "Quantum", "contacts": ['v114o', 'i114o']}}
     ]
 
     # track *****testing*****
@@ -40,21 +40,15 @@ class UserAuth(ApplicationSession):
     def onSessionJoined(self, session):
         self.log.info("A client has established a session with SESSION: <{}>".format(session['session']))
         if session['authrole'] == 'user':
-            # if len(self.sessions) == 0:
+            """
+            BEWARE: This logic only handles 3 unique sessions which are
+            accomodated without any authentication; tracking comes from the websocket connection.
+            Logic session for demonstration purposes only. For a further and robust way handling of
+            sessions consider implementing an authentication design yourself.
+            """
             userid = UserAuth.userIDS[UserAuth.trackme]
             UserAuth.sessions[session['session']] = userid
             UserAuth.trackme += 1
-            # else:
-            #     s_0 = list(UserAuth.sessions.keys())[0]
-            #     user = UserAuth.sessions[s_0]
-            #     if user.get('v114o'):
-            #         userid = UserAuth.userIDS[1]
-            #         UserAuth.sessions[session['session']] = userid
-            #         UserAuth.trackme += 1
-            #     else:
-            #         userid = UserAuth.userIDS[0]
-            #         UserAuth.sessions[session['session']] = userid
-            #         UserAuth.trackme += 1
         print("SESSIONS LIST: {}".format(UserAuth.sessions))
 
     def onSessionLeave(self, session):

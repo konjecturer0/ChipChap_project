@@ -67,7 +67,7 @@ class Chat extends React.Component {
 
         this.props.session.subscribe(`com.chipchap.session.user.actions:listen:${this.props.myid}`, this.updateMessageHistory).then(
             (subscription) => {
-                console.log("subscription to <<listen>> (2) successful");
+                
             },
             (error) => {
                 console.log("error with subscription to <<listen>> (2)");
@@ -79,7 +79,6 @@ class Chat extends React.Component {
     componentDidUpdate() {
         // Set message history based on user
         this.updateScrolling();
-        // this.props.onMessageStoreClean(this.props.myid);
     }
 
     updateScrolling() {
@@ -91,8 +90,6 @@ class Chat extends React.Component {
     }
 
     updateMessageHistory = ([msg, userid]) => {
-        console.log("UPDATING MESSAGE...");
-        console.log(msg[0]);
         let userStore = [];
         if (this.state.messageHistory.length === 0) {
             userStore = [...userStore, {[userid]:[msg[0]]}];
@@ -104,19 +101,12 @@ class Chat extends React.Component {
                 userStore = [...userStore, {[userid]:[msg[0]]}];
             }
         }
-        // userStore = [...userStore, {[userid]:[msg[0]]}];
         for (let i=0; i<this.state.messageHistory.length;i++) {
             if (Object.keys(this.state.messageHistory[i])[0] !== userid) {
                 userStore = [...userStore, this.state.messageHistory[i]];
             }
-            // } else if (Object.keys(this.state.messageHistory[i])[0] === userid) {
-            //     userStore = [...userStore, {[userid]:[...this.state.messageHistory[i][userid], msg[0]]}]
-            // } else {
-            //     userStore = [...userStore, {[userid]:[msg[0]]}];
-            // }
         }
-        // }
-        this.setState({messageHistory: userStore}); 
+        this.setState({messageHistory: userStore});
     }
 
     onEnterMessage = (e) => {
@@ -143,21 +133,12 @@ class Chat extends React.Component {
                         userStore = [...userStore, {[userid]:[msg]}];
                     }
                 }
-                // userStore = [...userStore, {[userid]:[msg]}];
                 for (let i=0; i<this.state.messageHistory.length;i++) {
                     if (Object.keys(this.state.messageHistory[i])[0] !== userid) {
                         userStore = [...userStore, this.state.messageHistory[i]];
                     }
-                    // } else if (Object.keys(this.state.messageHistory[i])[0] === userid) {
-                    //     userStore = [...userStore, {[userid]:[...this.state.messageHistory[i][userid], msg]}]
-                    // } else {
-                    //     userStore = [...userStore, {[userid]:[msg]}];
-                    // }
                 }
-                // }
-                console.log("LOGGING HISTORY>>>>>>>>>>>>>>>>>>>>>>");
-                console.log(userStore);
-                this.setState({messageHistory: userStore}, () => console.log(this.state.messageHistory));
+                this.setState({messageHistory: userStore});
                 this.enterField.current.value = '';
                 this.setState({message: ''});
                 this.props.session.publish('com.chipchap.session.user.actions:message', [], {msg:msgtext, toid: this.props.user.id});
@@ -169,23 +150,8 @@ class Chat extends React.Component {
         this.setState({message: e.target.value});
     }
 
-    onMsgStorage = () => {
-        return this.props.messageNotify.map((message) => {
-            return <UserMessage userid={this.props.user.id} message={message} />
-        })
-    }
-
     onMsgHistory = () => {
         const index = this.state.messageHistory.findIndex(user => Object.keys(user)[0] === this.props.user.id);
-        console.log("INSIDE MESSAGE HISTORY");
-        console.log(index);
-        console.log(this.state.messageHistory);
-        // console.log(index);
-        // if (index === -1) {
-        //     let touser = {};
-        //     touser[this.props.user.id] = []
-        //     this.setState({messageHistory: [...this.state.messageHistory, touser]});
-        // } else {
         if (index !== -1) {
             return this.state.messageHistory[index][this.props.user.id].map((message) => {
                 if (message.self) {
@@ -195,14 +161,12 @@ class Chat extends React.Component {
                 }
             })
         }
-        // }
     }
 
     render() {
         return ( <>
             <UserSelected userid={this.props.user.id} name={this.props.user.name} />
             <ChatLayout ref={this.mainLayout}>
-                {this.onMsgStorage()}
                 {this.onMsgHistory()}
             </ChatLayout>
             <EnterMessage onmessage={this.onChangeMessage} onenter={this.onEnterMessage} clean={this.enterField} />
